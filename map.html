@@ -22,7 +22,7 @@
     #header h1 { font-size: 15px; font-weight: 700; white-space: nowrap; }
     .header-meta { font-size: 11px; color: #7a9bb5; }
 
-    #container { display: flex; height: calc(100vh - 44px); }
+    #container { display: flex; height: calc(100vh - 44px); position: relative; }
     #map { flex: 1; }
 
     #sidebar {
@@ -43,8 +43,62 @@
       text-transform: uppercase;
       border-bottom: 1px solid #1e2d3d;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
+    .sidebar-close { display: none; background: none; border: none; color: #7a9bb5; font-size: 18px; cursor: pointer; line-height: 1; padding: 0 2px; }
     #day-list { flex: 1; overflow-y: auto; }
+
+    /* ── モバイル用フローティングボタン ── */
+    #list-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1100;
+      background: #1e3a52;
+      color: #4da8da;
+      border: 1px solid #4da8da;
+      border-radius: 24px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,.5);
+      white-space: nowrap;
+    }
+
+    /* ── スマホ対応 ── */
+    @media (max-width: 768px) {
+      #header h1 { font-size: 13px; }
+      .header-meta { font-size: 10px; }
+
+      #container { height: calc(100vh - 38px); }
+
+      #sidebar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        width: 100%;
+        height: 65%;
+        border-left: none;
+        border-top: 2px solid #1e2d3d;
+        border-radius: 14px 14px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+      #sidebar.open { transform: translateY(0); }
+
+      .sidebar-close { display: block; }
+
+      #list-toggle { display: block; }
+
+      .day-item { padding: 10px 14px; }
+      .day-city  { font-size: 13px; }
+      .day-desc  { font-size: 12px; }
+    }
 
     .day-item {
       padding: 9px 12px;
@@ -98,7 +152,7 @@
 <div id="container">
   <div id="map"></div>
   <div id="sidebar">
-    <div class="sidebar-title">日程一覧</div>
+    <div class="sidebar-title">日程一覧<button class="sidebar-close" id="sidebar-close-btn">✕</button></div>
     <div id="day-list"></div>
     <div class="legend">
       <div class="legend-title">凡例</div>
@@ -115,6 +169,8 @@
     </div>
   </div>
 </div>
+
+<button id="list-toggle">日程一覧 ▲</button>
 
 <script>
 const COLORS = { japan:'#da4d7a', peru:'#7ec850', bolivia:'#e8943a', chile:'#b87eda' };
@@ -340,9 +396,31 @@ DAYS.forEach((d, i) => {
     <div class="day-desc">${d.desc}</div>
     <span class="country-tag tag-${d.country}">${LABELS[d.country]}</span>
   `;
-  el.addEventListener('click', () => selectDay(i));
+  el.addEventListener('click', () => {
+    selectDay(i);
+    // モバイルではタップ後にサイドバーを閉じる
+    if (window.innerWidth <= 768) closeSidebar();
+  });
   dayList.appendChild(el);
 });
+
+// ── モバイル サイドバー開閉 ─────────────────────────────
+const sidebar   = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('list-toggle');
+const closeBtn  = document.getElementById('sidebar-close-btn');
+
+function openSidebar() {
+  sidebar.classList.add('open');
+  toggleBtn.textContent = '地図に戻る ▼';
+}
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  toggleBtn.textContent = '日程一覧 ▲';
+}
+toggleBtn.addEventListener('click', () => {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+closeBtn.addEventListener('click', closeSidebar);
 </script>
 </body>
 </html>
