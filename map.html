@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>南米旅行 旅程マップ 2026 GW</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #0f1923; color: #fff; }
+
+    #header {
+      padding: 10px 20px;
+      background: #0f1923;
+      border-bottom: 1px solid #1e2d3d;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    #header h1 { font-size: 15px; font-weight: 700; white-space: nowrap; }
+    .header-meta { font-size: 11px; color: #7a9bb5; }
+
+    #container { display: flex; height: calc(100vh - 44px); }
+    #map { flex: 1; }
+
+    #sidebar {
+      width: 272px;
+      background: #121e2b;
+      overflow-y: auto;
+      border-left: 1px solid #1e2d3d;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-title {
+      padding: 9px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #7a9bb5;
+      text-transform: uppercase;
+      border-bottom: 1px solid #1e2d3d;
+      flex-shrink: 0;
+    }
+    #day-list { flex: 1; overflow-y: auto; }
+
+    .day-item {
+      padding: 9px 12px;
+      border-bottom: 1px solid #1a2a3a;
+      cursor: pointer;
+      transition: background 0.12s;
+      border-left: 3px solid transparent;
+    }
+    .day-item:hover { background: #1a2d42; }
+    .day-item.active { background: #1e3a52; border-left-color: #4da8da; }
+    .day-item.is-warn { border-left-color: #e8943a; }
+    .day-item.is-must { border-left-color: #fbbf24; }
+
+    .day-header { display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+    .day-badge  { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: #1e3a52; color: #4da8da; white-space: nowrap; }
+    .day-city   { font-size: 12px; font-weight: 600; }
+    .day-date   { font-size: 10px; color: #7a9bb5; margin-bottom: 2px; }
+    .day-desc   { font-size: 11px; color: #9ab5cc; line-height: 1.4; }
+
+    .country-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-top: 3px; }
+    .tag-peru    { background: #2d4a1e; color: #7ec850; }
+    .tag-bolivia { background: #4a2d1e; color: #e8943a; }
+    .tag-chile   { background: #2d1e4a; color: #b87eda; }
+    .tag-japan   { background: #4a1e2d; color: #da4d7a; }
+
+    .legend { padding: 10px 13px; border-top: 1px solid #1e2d3d; flex-shrink: 0; }
+    .legend-title { font-size: 10px; color: #7a9bb5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; }
+    .legend-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .legend-line-flight { width: 20px; height: 2px; background: repeating-linear-gradient(90deg,#4da8da 0,#4da8da 4px,transparent 4px,transparent 8px); flex-shrink:0; }
+    .legend-line-ground { width: 20px; height: 2px; background: #4da8da; flex-shrink:0; opacity:.6; }
+
+    .leaflet-popup-content-wrapper { background: #121e2b; color: #fff; border: 1px solid #1e3a52; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+    .leaflet-popup-tip { background: #121e2b; }
+    .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.6; min-width: 200px; }
+    .popup-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .popup-day   { font-size: 11px; color: #7a9bb5; margin-bottom: 5px; }
+    .popup-warn  { font-size: 11px; color: #e8943a; background: #2a1800; padding: 4px 8px; border-radius: 4px; margin-bottom: 5px; }
+    .popup-must  { font-size: 11px; color: #fbbf24; background: #2a2200; padding: 4px 8px; border-radius: 4px; margin-bottom: 5px; }
+    .popup-spots { font-size: 12px; color: #c0d8e8; padding-left: 14px; margin: 0; }
+    .popup-spots li { margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <h1>🗺 南米旅行 旅程マップ 2026 GW</h1>
+  <div class="header-meta">4/24（木）東京発 → 5/11（月）東京着 ｜ 4カ国 17ステップ</div>
+</div>
+
+<div id="container">
+  <div id="map"></div>
+  <div id="sidebar">
+    <div class="sidebar-title">日程一覧</div>
+    <div id="day-list"></div>
+    <div class="legend">
+      <div class="legend-title">凡例</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#da4d7a"></div>日本</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7ec850"></div>ペルー</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e8943a"></div>ボリビア</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b87eda"></div>チリ</div>
+      <div style="height:6px"></div>
+      <div class="legend-item"><div class="legend-line-flight"></div>フライト</div>
+      <div class="legend-item"><div class="legend-line-ground"></div>陸路 / 鉄道</div>
+      <div style="height:4px"></div>
+      <div class="legend-item"><span style="font-size:11px;color:#fbbf24;">★ 黄枠 = MUSTスポット</span></div>
+      <div class="legend-item"><span style="font-size:11px;color:#e8943a;">⚠ オレンジ枠 = 要注意</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = { japan:'#da4d7a', peru:'#7ec850', bolivia:'#e8943a', chile:'#b87eda' };
+const LABELS = { japan:'日本', peru:'ペルー', bolivia:'ボリビア', chile:'チリ' };
+
+const DAYS = [
+  {
+    day:0, date:'4/24（木）', city:'東京 出発', country:'japan',
+    lat:35.6894, lng:139.6917,
+    desc:'成田 / 羽田 → LAX → リマ（約22〜24時間）',
+    spots:['NRT / HND 出発', 'LAX 乗継', 'リマ（LIM）へ'],
+    warn:null, must:false
+  },
+  {
+    day:1, date:'4/25（土）', city:'リマ 到着・休息', country:'peru',
+    lat:-12.0464, lng:-77.0428,
+    desc:'早朝〜午前着。ミラフローレス地区を軽く散策。',
+    spots:['ミラフローレス 崖沿い散策','Larcomar（海岸エリア）','セビーチェで夕食'],
+    warn:null, must:false
+  },
+  {
+    day:2, date:'4/26（日）', city:'フアカチナ → ナスカ', country:'peru',
+    lat:-14.0853, lng:-75.7661,
+    desc:'リマからバス5h。砂丘ダンバギー → ナスカへ移動。',
+    spots:['フアカチナ 砂丘ダンバギー・サンボード','夕日のオアシス湖','バスでナスカへ（1.5h）'],
+    warn:'バスは Cruz del Sur / Oltursa の大手を使うこと', must:false
+  },
+  {
+    day:3, date:'4/27（月）', city:'ナスカ → クスコ', country:'peru',
+    lat:-14.8296, lng:-74.9388,
+    desc:'早朝7〜9時に遊覧飛行。バスでリマ→クスコへフライト。',
+    spots:['ナスカの地上絵 遊覧飛行（$100〜200）','バスでリマへ（4〜5h）','リマ → クスコ フライト（1h15m）'],
+    warn:'酔い止め持参。小型プロペラ機は揺れる', must:false
+  },
+  {
+    day:4, date:'4/28（火）', city:'クスコ 順応日', country:'peru',
+    lat:-13.5170, lng:-71.9780,
+    desc:'標高3,400m。到着後は無理せず順応。軽い市内散策。',
+    spots:['プラザ・デ・アルマス','コリカンチャ（外観）','サン・ブラス地区','サクサイワマン遺跡（体調次第）'],
+    warn:'到着日はアルコール禁止。コカ茶＋Sorojchi Pills', must:false
+  },
+  {
+    day:5, date:'4/29（水）', city:'アグアスカリエンテス', country:'peru',
+    lat:-13.1525, lng:-72.5259,
+    desc:'クスコ06:05発の電車（3.5h）。8時から整理券→15時チケット購入。',
+    spots:['Peru Rail Expedition 06:05発','文化省オフィスで整理券（代理店代行）','午後3時にチケット購入（翌日分）','川沿いレストランで夕食'],
+    warn:'チケット未入手。2日確保。Circuit 1-B を指定', must:false
+  },
+  {
+    day:6, date:'4/30（木）', city:'マチュピチュ', country:'peru',
+    lat:-13.1631, lng:-72.5450,
+    desc:'5:00起床。5:30〜バス25分で登頂。Circuit 1-Bで写真撮影。',
+    spots:['ガーディアンズ・ハウス（定番全景写真）','インティワタナ周辺','主神殿・3つの窓の神殿','段々畑（アンデネス）'],
+    warn:null, must:true
+  },
+  {
+    day:7, date:'5/1（金）', city:'クスコ → ラパス', country:'bolivia',
+    lat:-16.5000, lng:-68.1500,
+    desc:'電車でクスコ戻り→フライト1h。エルアルト空港は4,061m！',
+    spots:['クスコ → ラパス フライト（1h）','エルアルト空港（4,061m）→ 市内タクシー','プラサ・ムリリョ周辺を軽く散策'],
+    warn:'エルアルト空港着直後が一番つらい。安静に', must:false
+  },
+  {
+    day:8, date:'5/2（土）', city:'ラパス 観光', country:'bolivia',
+    lat:-16.5533, lng:-68.0789,
+    desc:'世界最長の都市ロープウェイ。魔女市場。月の谷。',
+    spots:['ミ・テレフェリコ（赤・黄ライン）','魔女市場（Mercado de las Brujas）','月の谷（Valle de la Luna）'],
+    warn:null, must:false
+  },
+  {
+    day:9, date:'5/3（日）', city:'ウユニ 越境ツアー Day 1', country:'bolivia',
+    lat:-20.4613, lng:-66.8255,
+    desc:'BoA 07:40発（1日1便）。ウユニ塩湖・乾季の白い絶景。',
+    spots:['BoA 07:40 ラパス→ウユニ','ウユニ塩湖（乾季：白い塩原・六角形模様）','インカワシ島（サボテンの孤島）','日没の塩湖'],
+    warn:'BoA 1日1便のみ。逃したら1日ロス', must:false
+  },
+  {
+    day:10, date:'5/4（月）', city:'越境ツアー Day 2（高原ラグーン）', country:'bolivia',
+    lat:-22.1706, lng:-67.7841,
+    desc:'標高4,500m超の高原をジープで縦断。カラフルな湖とフラミンゴ。',
+    spots:['ラグーナ・コロラダ（赤い湖・フラミンゴ数千羽）','ラグーナ・カナーパ（ターコイズブルー）','ダリの庭（奇岩砂漠）','ラグーナ・ベルデ（エメラルド＋火山）'],
+    warn:null, must:false
+  },
+  {
+    day:11, date:'5/5（火）', city:'越境 Day 3 → アタカマ', country:'chile',
+    lat:-22.9087, lng:-68.1997,
+    desc:'4:30起床で間欠泉→国境越え。夕方バジェ・デ・ラ・ルナ。',
+    spots:['ソル・デ・マニャーナ間欠泉（4,900m・4:30起床）','チリ国境越え','サン・ペドロ・デ・アタカマ着','バジェ・デ・ラ・ルナ（夕日）'],
+    warn:null, must:false
+  },
+  {
+    day:12, date:'5/6（水）', city:'アタカマ → サンティアゴ', country:'chile',
+    lat:-33.4489, lng:-70.6693,
+    desc:'午前ラグーナ・セハール→カラマから飛行機でサンティアゴへ。',
+    spots:['ラグーナ・セハール（死海のように浮く塩湖）','カラマ（CJC）→ サンティアゴ（SCL）フライト（2h）','翌朝早便のため空港近くに宿泊'],
+    warn:'11:30には出発すること（フライト接続のため）', must:false
+  },
+  {
+    day:13, date:'5/7（木）', city:'イースター島 到着', country:'chile',
+    lat:-27.1127, lng:-109.3497,
+    desc:'LA841 08:20発。午後着。ガイド付き半日ツアー＋星空ツアー。',
+    spots:['LATAM LA841 08:20発 → 13:20着','アフ・トンガリキ（15体モアイ）','ラノ・ララク（採石場・数百体のモアイ）','🌟 星空ツアー（木曜のみ・この夜が唯一確実）'],
+    warn:'星空ツアーは必ず事前予約。5/7木曜夜が唯一の確実日', must:true
+  },
+  {
+    day:14, date:'5/8（金）', city:'イースター島 フルデイ', country:'chile',
+    lat:-27.0625, lng:-109.4235,
+    desc:'4:45起床でトンガリキ日の出。島内全スポット制覇。',
+    spots:['🌅 アフ・トンガリキ 日の出撮影（4:45起床・三脚推奨）','ラノ・カウ火口湖','オロンゴ村（バードマン儀式跡）','アナケナビーチ','アフ・アキビ・テ・ピト・クラ','西海岸から夕日'],
+    warn:null, must:true
+  },
+  {
+    day:15, date:'5/9（土）', city:'イースター島 → サンティアゴ', country:'chile',
+    lat:-33.4489, lng:-70.6693,
+    desc:'午前フリー。LA842 14:00〜17:30発でサンティアゴへ。',
+    spots:['午前：撮り直し・ハンガ・ロア散策','LATAM LA842 14:00〜17:30発 → SCL 19:00〜22:30着','翌朝フライトのため空港近くに宿泊'],
+    warn:null, must:false
+  },
+  {
+    day:16, date:'5/10（日）', city:'帰路（サンティアゴ発）', country:'japan',
+    lat:35.6894, lng:139.6917,
+    desc:'LA601 06:45発 → LAX → 東京。',
+    spots:['LATAM LA601 06:45 SCL発','LAX 乗継（3〜5h）','JAL / ANA / AA で東京へ'],
+    warn:null, must:false
+  },
+];
+
+// ── フライト区間（点線）
+const FLIGHTS = [
+  [[ 35.6894, 139.6917], [-12.0464, -77.0428]], // 東京→リマ（太平洋越え）
+  [[-14.8296, -74.9388], [-13.5170, -71.9780]], // ナスカ近辺→クスコ（リマ経由で実質）
+  [[-13.5170, -71.9780], [-16.5000, -68.1500]], // クスコ→ラパス
+  [[-16.5000, -68.1500], [-20.4613, -66.8255]], // ラパス→ウユニ
+  [[-22.9087, -68.1997], [-33.4489, -70.6693]], // カラマ→サンティアゴ
+  [[-33.4489, -70.6693], [-27.1127,-109.3497]], // サンティアゴ→イースター島
+  [[-27.1127,-109.3497], [-33.4489, -70.6693]], // イースター島→サンティアゴ
+  [[-33.4489, -70.6693], [ 35.6894, 139.6917]], // サンティアゴ→東京
+];
+
+// ── 陸路・ジープ区間（実線）
+const GROUNDS = [
+  [[-12.0464, -77.0428], [-14.0853, -75.7661]], // リマ→フアカチナ（バス）
+  [[-14.0853, -75.7661], [-14.8296, -74.9388]], // フアカチナ→ナスカ（バス）
+  [[-13.1525, -72.5259], [-13.1631, -72.5450]], // アグアスカリエンテス→マチュピチュ
+  [[-13.5170, -71.9780], [-13.1525, -72.5259]], // クスコ→アグアスカリエンテス（電車）
+  // ウユニ→アタカマ越境ジープ
+  [[-20.4613, -66.8255], [-22.1706, -67.7841]],
+  [[-22.1706, -67.7841], [-22.9087, -68.1997]],
+];
+
+// ── Map setup ───────────────────────────────────────────
+const map = L.map('map', { center: [-22, -88], zoom: 3 });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+}).addTo(map);
+
+// ルート線
+FLIGHTS.forEach(pts => {
+  L.polyline(pts, { color:'#4da8da', weight:1.5, opacity:.7, dashArray:'6 5' }).addTo(map);
+});
+GROUNDS.forEach(pts => {
+  L.polyline(pts, { color:'#4da8da', weight:2, opacity:.45 }).addTo(map);
+});
+
+// マーカー
+const markers = [];
+DAYS.forEach((d, i) => {
+  const color = COLORS[d.country];
+  const size  = d.must ? 14 : 10;
+  const border= d.must ? '#fbbf24' : (d.warn ? '#e8943a' : color);
+  const icon  = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${color};border:2px solid ${border};
+      box-shadow:0 0 6px ${color}88;
+      ${d.must ? 'box-shadow:0 0 10px #fbbf2488,0 0 4px #fbbf24;' : ''}
+    "></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+  });
+
+  const m = L.marker([d.lat, d.lng], { icon }).addTo(map);
+
+  const spotsHtml = d.spots.map(s => `<li>${s}</li>`).join('');
+  const warnHtml  = d.warn ? `<div class="popup-warn">⚠ ${d.warn}</div>` : '';
+  const mustHtml  = d.must ? `<div class="popup-must">★ MUSTスポット</div>` : '';
+  m.bindPopup(`
+    <div class="popup-title">${d.city}</div>
+    <div class="popup-day">Day ${d.day} ｜ ${d.date}</div>
+    ${mustHtml}${warnHtml}
+    <ul class="popup-spots">${spotsHtml}</ul>
+  `, { maxWidth: 260 });
+
+  m.on('click', () => selectDay(i));
+  markers.push(m);
+});
+
+// ── Sidebar ─────────────────────────────────────────────
+const dayList = document.getElementById('day-list');
+let activeIdx = null;
+
+function selectDay(i) {
+  if (activeIdx !== null) {
+    dayList.children[activeIdx].classList.remove('active');
+  }
+  activeIdx = i;
+  dayList.children[i].classList.add('active');
+  dayList.children[i].scrollIntoView({ behavior:'smooth', block:'nearest' });
+  map.setView([DAYS[i].lat, DAYS[i].lng], Math.max(map.getZoom(), 5), { animate: true });
+  markers[i].openPopup();
+}
+
+DAYS.forEach((d, i) => {
+  const el = document.createElement('div');
+  el.className = 'day-item' + (d.warn ? ' is-warn' : '') + (d.must ? ' is-must' : '');
+  el.innerHTML = `
+    <div class="day-header">
+      <span class="day-badge">Day ${d.day}</span>
+      <span class="day-city">${d.city}</span>
+    </div>
+    <div class="day-date">${d.date}</div>
+    <div class="day-desc">${d.desc}</div>
+    <span class="country-tag tag-${d.country}">${LABELS[d.country]}</span>
+  `;
+  el.addEventListener('click', () => selectDay(i));
+  dayList.appendChild(el);
+});
+</script>
+</body>
+</html>
