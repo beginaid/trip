@@ -10,25 +10,46 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #0f1923; color: #fff; }
 
+    /* ── ヘッダー ── */
     #header {
-      padding: 10px 20px;
+      padding: 9px 16px;
       background: #0f1923;
       border-bottom: 1px solid #1e2d3d;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
     }
-    #header h1 { font-size: 15px; font-weight: 700; white-space: nowrap; }
+    #header h1 { font-size: 14px; font-weight: 700; white-space: nowrap; }
     .header-meta { font-size: 11px; color: #7a9bb5; }
 
-    #container { display: flex; height: calc(100vh - 44px); position: relative; }
+    /* ── レイアウト ── */
+    #container { display: flex; height: calc(100vh - 40px); position: relative; }
     #map { flex: 1; }
 
+    /* ── 凡例（右上フローティング） ── */
+    #legend {
+      position: absolute;
+      top: 10px; right: 10px;
+      z-index: 900;
+      background: rgba(18,30,43,0.92);
+      border: 1px solid #1e2d3d;
+      border-radius: 8px;
+      padding: 7px 10px;
+      backdrop-filter: blur(4px);
+      min-width: 120px;
+    }
+    .legend-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; font-size: 10px; color: #c0d8e8; }
+    .legend-row:last-child { margin-bottom: 0; }
+    .ld { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .lf { width: 18px; height: 2px; background: repeating-linear-gradient(90deg,#4da8da 0,#4da8da 4px,transparent 4px,transparent 7px); flex-shrink:0; }
+    .lg { width: 18px; height: 2px; background: rgba(77,168,218,.55); flex-shrink:0; }
+    .legend-sep { border-top: 1px solid #1e2d3d; margin: 4px 0; }
+
+    /* ── サイドバー ── */
     #sidebar {
       width: 272px;
       background: #121e2b;
-      overflow-y: auto;
       border-left: 1px solid #1e2d3d;
       flex-shrink: 0;
       display: flex;
@@ -36,70 +57,16 @@
     }
     .sidebar-title {
       padding: 9px 14px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: #7a9bb5;
-      text-transform: uppercase;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: #7a9bb5; text-transform: uppercase;
       border-bottom: 1px solid #1e2d3d;
       flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
     }
     .sidebar-close { display: none; background: none; border: none; color: #7a9bb5; font-size: 18px; cursor: pointer; line-height: 1; padding: 0 2px; }
     #day-list { flex: 1; overflow-y: auto; }
 
-    /* ── モバイル用フローティングボタン ── */
-    #list-toggle {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1100;
-      background: #1e3a52;
-      color: #4da8da;
-      border: 1px solid #4da8da;
-      border-radius: 24px;
-      padding: 10px 22px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(0,0,0,.5);
-      white-space: nowrap;
-    }
-
-    /* ── スマホ対応 ── */
-    @media (max-width: 768px) {
-      #header h1 { font-size: 13px; }
-      .header-meta { font-size: 10px; }
-
-      #container { height: calc(100vh - 38px); }
-
-      #sidebar {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        width: 100%;
-        height: 65%;
-        border-left: none;
-        border-top: 2px solid #1e2d3d;
-        border-radius: 14px 14px 0 0;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-      }
-      #sidebar.open { transform: translateY(0); }
-
-      .sidebar-close { display: block; }
-
-      #list-toggle { display: block; }
-
-      .day-item { padding: 10px 14px; }
-      .day-city  { font-size: 13px; }
-      .day-desc  { font-size: 12px; }
-    }
-
+    /* ── 日程アイテム ── */
     .day-item {
       padding: 9px 12px;
       border-bottom: 1px solid #1a2a3a;
@@ -107,7 +74,7 @@
       transition: background 0.12s;
       border-left: 3px solid transparent;
     }
-    .day-item:hover { background: #1a2d42; }
+    .day-item:hover, .day-item:active { background: #1a2d42; }
     .day-item.active { background: #1e3a52; border-left-color: #4da8da; }
     .day-item.is-warn { border-left-color: #e8943a; }
     .day-item.is-must { border-left-color: #fbbf24; }
@@ -124,22 +91,116 @@
     .tag-chile   { background: #2d1e4a; color: #b87eda; }
     .tag-japan   { background: #4a1e2d; color: #da4d7a; }
 
-    .legend { padding: 10px 13px; border-top: 1px solid #1e2d3d; flex-shrink: 0; }
-    .legend-title { font-size: 10px; color: #7a9bb5; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; }
-    .legend-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .legend-line-flight { width: 20px; height: 2px; background: repeating-linear-gradient(90deg,#4da8da 0,#4da8da 4px,transparent 4px,transparent 8px); flex-shrink:0; }
-    .legend-line-ground { width: 20px; height: 2px; background: #4da8da; flex-shrink:0; opacity:.6; }
+    /* ── モーダル ── */
+    #day-modal {
+      display: none;
+      position: fixed; inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,.6);
+      align-items: flex-end;
+      justify-content: center;
+    }
+    #day-modal.open { display: flex; }
 
+    .modal-sheet {
+      width: 100%;
+      max-width: 480px;
+      background: #121e2b;
+      border-radius: 18px 18px 0 0;
+      border-top: 1px solid #1e3a52;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-handle {
+      width: 36px; height: 4px; background: #2a3f56;
+      border-radius: 2px; margin: 10px auto 0;
+      flex-shrink: 0;
+    }
+    .modal-header {
+      padding: 12px 16px 10px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      border-bottom: 1px solid #1a2a3a;
+      flex-shrink: 0;
+    }
+    .modal-title-area { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .modal-city { font-size: 16px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #7a9bb5; font-size: 20px; cursor: pointer; line-height: 1; padding: 0; flex-shrink: 0; }
+
+    .modal-body { overflow-y: auto; padding: 14px 16px 20px; }
+    .modal-date { font-size: 12px; color: #7a9bb5; margin-bottom: 10px; }
+    .modal-badge-must { font-size: 11px; color: #fbbf24; background: #2a2200; padding: 5px 10px; border-radius: 6px; margin-bottom: 8px; }
+    .modal-badge-warn { font-size: 11px; color: #e8943a; background: #2a1800; padding: 5px 10px; border-radius: 6px; margin-bottom: 8px; }
+    .modal-desc { font-size: 13px; color: #9ab5cc; line-height: 1.6; margin-bottom: 12px; }
+    .modal-spots-title { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #7a9bb5; margin-bottom: 6px; }
+    .modal-spots { list-style: none; }
+    .modal-spots li {
+      font-size: 13px; color: #c0d8e8; padding: 6px 0;
+      border-bottom: 1px solid #1a2a3a;
+      padding-left: 14px; position: relative; line-height: 1.5;
+    }
+    .modal-spots li::before { content: '›'; position: absolute; left: 2px; color: #4da8da; }
+    .modal-map-btn {
+      margin-top: 16px; width: 100%;
+      background: #1e3a52; color: #4da8da;
+      border: 1px solid #4da8da; border-radius: 8px;
+      padding: 10px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .12s;
+    }
+    .modal-map-btn:hover { background: #253e5a; }
+
+    /* ── Leaflet popup ── */
     .leaflet-popup-content-wrapper { background: #121e2b; color: #fff; border: 1px solid #1e3a52; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
     .leaflet-popup-tip { background: #121e2b; }
     .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.6; min-width: 200px; }
     .popup-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
     .popup-day   { font-size: 11px; color: #7a9bb5; margin-bottom: 5px; }
-    .popup-warn  { font-size: 11px; color: #e8943a; background: #2a1800; padding: 4px 8px; border-radius: 4px; margin-bottom: 5px; }
-    .popup-must  { font-size: 11px; color: #fbbf24; background: #2a2200; padding: 4px 8px; border-radius: 4px; margin-bottom: 5px; }
-    .popup-spots { font-size: 12px; color: #c0d8e8; padding-left: 14px; margin: 0; }
-    .popup-spots li { margin-bottom: 2px; }
+
+    /* ── モバイル用フローティングボタン ── */
+    #list-toggle {
+      display: none;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 1100;
+      background: #1e3a52; color: #4da8da;
+      border: 1px solid #4da8da; border-radius: 24px;
+      padding: 10px 22px; font-size: 13px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,.5);
+      white-space: nowrap;
+    }
+
+    /* ── スマホ対応 ── */
+    @media (max-width: 768px) {
+      #header h1 { font-size: 13px; }
+      .header-meta { font-size: 10px; }
+      #container { height: calc(100vh - 38px); }
+
+      #sidebar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        width: 100%; height: 65%;
+        border-left: none; border-top: 2px solid #1e2d3d;
+        border-radius: 14px 14px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+      #sidebar.open { transform: translateY(0); }
+      .sidebar-close { display: block; }
+      #list-toggle { display: block; }
+
+      /* モバイルではモーダルを全幅に */
+      .modal-sheet { border-radius: 18px 18px 0 0; max-height: 92vh; }
+
+      /* 凡例をさらにコンパクト */
+      #legend { font-size: 9px; padding: 5px 8px; min-width: 100px; }
+      .legend-row { font-size: 9px; }
+    }
   </style>
 </head>
 <body>
@@ -151,30 +212,57 @@
 
 <div id="container">
   <div id="map"></div>
+
+  <!-- 凡例（右上フローティング） -->
+  <div id="legend">
+    <div class="legend-row"><div class="ld" style="background:#da4d7a"></div>日本</div>
+    <div class="legend-row"><div class="ld" style="background:#7ec850"></div>ペルー</div>
+    <div class="legend-row"><div class="ld" style="background:#e8943a"></div>ボリビア</div>
+    <div class="legend-row"><div class="ld" style="background:#b87eda"></div>チリ</div>
+    <div class="legend-sep"></div>
+    <div class="legend-row"><div class="lf"></div>フライト</div>
+    <div class="legend-row"><div class="lg"></div>陸路</div>
+    <div class="legend-sep"></div>
+    <div class="legend-row" style="color:#fbbf24;">★ 黄枠 MUST</div>
+    <div class="legend-row" style="color:#e8943a;">⚠ 要注意</div>
+  </div>
+
   <div id="sidebar">
     <div class="sidebar-title">日程一覧<button class="sidebar-close" id="sidebar-close-btn">✕</button></div>
     <div id="day-list"></div>
-    <div class="legend">
-      <div class="legend-title">凡例</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#da4d7a"></div>日本</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7ec850"></div>ペルー</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#e8943a"></div>ボリビア</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b87eda"></div>チリ</div>
-      <div style="height:6px"></div>
-      <div class="legend-item"><div class="legend-line-flight"></div>フライト</div>
-      <div class="legend-item"><div class="legend-line-ground"></div>陸路 / 鉄道</div>
-      <div style="height:4px"></div>
-      <div class="legend-item"><span style="font-size:11px;color:#fbbf24;">★ 黄枠 = MUSTスポット</span></div>
-      <div class="legend-item"><span style="font-size:11px;color:#e8943a;">⚠ オレンジ枠 = 要注意</span></div>
-    </div>
   </div>
 </div>
 
 <button id="list-toggle">日程一覧 ▲</button>
 
+<!-- 日程詳細モーダル -->
+<div id="day-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <span id="modal-badge" class="day-badge">Day 0</span>
+        <span id="modal-city" class="modal-city"></span>
+        <span id="modal-ctag" class="country-tag"></span>
+      </div>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-date" class="modal-date"></div>
+      <div id="modal-must" class="modal-badge-must" style="display:none">★ MUSTスポット</div>
+      <div id="modal-warn" class="modal-badge-warn" style="display:none"></div>
+      <div id="modal-desc" class="modal-desc"></div>
+      <div class="modal-spots-title">スポット</div>
+      <ul id="modal-spots" class="modal-spots"></ul>
+      <button class="modal-map-btn" id="modal-map-btn">地図で見る →</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const COLORS = { japan:'#da4d7a', peru:'#7ec850', bolivia:'#e8943a', chile:'#b87eda' };
 const LABELS = { japan:'日本', peru:'ペルー', bolivia:'ボリビア', chile:'チリ' };
+const CTAGS  = { japan:'tag-japan', peru:'tag-peru', bolivia:'tag-bolivia', chile:'tag-chile' };
 
 const DAYS = [
   {
@@ -298,36 +386,31 @@ const DAYS = [
   },
 ];
 
-// ── フライト区間（点線）
 const FLIGHTS = [
-  [[ 35.6894, 139.6917], [-12.0464, -77.0428]], // 東京→リマ（太平洋越え）
-  [[-14.8296, -74.9388], [-13.5170, -71.9780]], // ナスカ近辺→クスコ（リマ経由で実質）
-  [[-13.5170, -71.9780], [-16.5000, -68.1500]], // クスコ→ラパス
-  [[-16.5000, -68.1500], [-20.4613, -66.8255]], // ラパス→ウユニ
-  [[-22.9087, -68.1997], [-33.4489, -70.6693]], // カラマ→サンティアゴ
-  [[-33.4489, -70.6693], [-27.1127,-109.3497]], // サンティアゴ→イースター島
-  [[-27.1127,-109.3497], [-33.4489, -70.6693]], // イースター島→サンティアゴ
-  [[-33.4489, -70.6693], [ 35.6894, 139.6917]], // サンティアゴ→東京
+  [[ 35.6894, 139.6917], [-12.0464, -77.0428]],
+  [[-14.8296, -74.9388], [-13.5170, -71.9780]],
+  [[-13.5170, -71.9780], [-16.5000, -68.1500]],
+  [[-16.5000, -68.1500], [-20.4613, -66.8255]],
+  [[-22.9087, -68.1997], [-33.4489, -70.6693]],
+  [[-33.4489, -70.6693], [-27.1127,-109.3497]],
+  [[-27.1127,-109.3497], [-33.4489, -70.6693]],
+  [[-33.4489, -70.6693], [ 35.6894, 139.6917]],
 ];
-
-// ── 陸路・ジープ区間（実線）
 const GROUNDS = [
-  [[-12.0464, -77.0428], [-14.0853, -75.7661]], // リマ→フアカチナ（バス）
-  [[-14.0853, -75.7661], [-14.8296, -74.9388]], // フアカチナ→ナスカ（バス）
-  [[-13.1525, -72.5259], [-13.1631, -72.5450]], // アグアスカリエンテス→マチュピチュ
-  [[-13.5170, -71.9780], [-13.1525, -72.5259]], // クスコ→アグアスカリエンテス（電車）
-  // ウユニ→アタカマ越境ジープ
+  [[-12.0464, -77.0428], [-14.0853, -75.7661]],
+  [[-14.0853, -75.7661], [-14.8296, -74.9388]],
+  [[-13.1525, -72.5259], [-13.1631, -72.5450]],
+  [[-13.5170, -71.9780], [-13.1525, -72.5259]],
   [[-20.4613, -66.8255], [-22.1706, -67.7841]],
   [[-22.1706, -67.7841], [-22.9087, -68.1997]],
 ];
 
-// ── Map setup ───────────────────────────────────────────
+// ── Map ──────────────────────────────────────────────────
 const map = L.map('map', { center: [-22, -88], zoom: 3 });
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
 }).addTo(map);
 
-// ルート線
 FLIGHTS.forEach(pts => {
   L.polyline(pts, { color:'#4da8da', weight:1.5, opacity:.7, dashArray:'6 5' }).addTo(map);
 });
@@ -335,13 +418,12 @@ GROUNDS.forEach(pts => {
   L.polyline(pts, { color:'#4da8da', weight:2, opacity:.45 }).addTo(map);
 });
 
-// マーカー
 const markers = [];
 DAYS.forEach((d, i) => {
-  const color = COLORS[d.country];
-  const size  = d.must ? 14 : 10;
-  const border= d.must ? '#fbbf24' : (d.warn ? '#e8943a' : color);
-  const icon  = L.divIcon({
+  const color  = COLORS[d.country];
+  const size   = d.must ? 14 : 10;
+  const border = d.must ? '#fbbf24' : (d.warn ? '#e8943a' : color);
+  const icon = L.divIcon({
     className: '',
     html: `<div style="
       width:${size}px;height:${size}px;border-radius:50%;
@@ -349,34 +431,24 @@ DAYS.forEach((d, i) => {
       box-shadow:0 0 6px ${color}88;
       ${d.must ? 'box-shadow:0 0 10px #fbbf2488,0 0 4px #fbbf24;' : ''}
     "></div>`,
-    iconSize: [size, size],
-    iconAnchor: [size/2, size/2],
+    iconSize: [size, size], iconAnchor: [size/2, size/2],
   });
 
   const m = L.marker([d.lat, d.lng], { icon }).addTo(map);
-
-  const spotsHtml = d.spots.map(s => `<li>${s}</li>`).join('');
-  const warnHtml  = d.warn ? `<div class="popup-warn">⚠ ${d.warn}</div>` : '';
-  const mustHtml  = d.must ? `<div class="popup-must">★ MUSTスポット</div>` : '';
   m.bindPopup(`
     <div class="popup-title">${d.city}</div>
     <div class="popup-day">Day ${d.day} ｜ ${d.date}</div>
-    ${mustHtml}${warnHtml}
-    <ul class="popup-spots">${spotsHtml}</ul>
-  `, { maxWidth: 260 });
-
+  `, { maxWidth: 220 });
   m.on('click', () => selectDay(i));
   markers.push(m);
 });
 
-// ── Sidebar ─────────────────────────────────────────────
+// ── Sidebar ──────────────────────────────────────────────
 const dayList = document.getElementById('day-list');
 let activeIdx = null;
 
 function selectDay(i) {
-  if (activeIdx !== null) {
-    dayList.children[activeIdx].classList.remove('active');
-  }
+  if (activeIdx !== null) dayList.children[activeIdx].classList.remove('active');
   activeIdx = i;
   dayList.children[i].classList.add('active');
   dayList.children[i].scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -396,15 +468,62 @@ DAYS.forEach((d, i) => {
     <div class="day-desc">${d.desc}</div>
     <span class="country-tag tag-${d.country}">${LABELS[d.country]}</span>
   `;
-  el.addEventListener('click', () => {
-    selectDay(i);
-    // モバイルではタップ後にサイドバーを閉じる
-    if (window.innerWidth <= 768) closeSidebar();
-  });
+  el.addEventListener('click', () => openModal(i));
   dayList.appendChild(el);
 });
 
-// ── モバイル サイドバー開閉 ─────────────────────────────
+// ── モーダル ─────────────────────────────────────────────
+const modal       = document.getElementById('day-modal');
+const modalBadge  = document.getElementById('modal-badge');
+const modalCity   = document.getElementById('modal-city');
+const modalCtag   = document.getElementById('modal-ctag');
+const modalDate   = document.getElementById('modal-date');
+const modalMust   = document.getElementById('modal-must');
+const modalWarn   = document.getElementById('modal-warn');
+const modalDesc   = document.getElementById('modal-desc');
+const modalSpots  = document.getElementById('modal-spots');
+const modalMapBtn = document.getElementById('modal-map-btn');
+let modalDayIdx = null;
+
+function openModal(i) {
+  const d = DAYS[i];
+  modalDayIdx = i;
+
+  modalBadge.textContent = `Day ${d.day}`;
+  modalCity.textContent  = d.city;
+  modalCtag.className    = `country-tag ${CTAGS[d.country]}`;
+  modalCtag.textContent  = LABELS[d.country];
+  modalDate.textContent  = d.date;
+
+  if (d.must) { modalMust.style.display = 'block'; } else { modalMust.style.display = 'none'; }
+  if (d.warn) { modalWarn.style.display = 'block'; modalWarn.textContent = `⚠ ${d.warn}`; }
+  else        { modalWarn.style.display = 'none'; }
+
+  modalDesc.textContent = d.desc;
+  modalSpots.innerHTML  = d.spots.map(s => `<li>${s}</li>`).join('');
+
+  modal.classList.add('open');
+
+  // アクティブ行をハイライト
+  if (activeIdx !== null) dayList.children[activeIdx].classList.remove('active');
+  activeIdx = i;
+  dayList.children[i].classList.add('active');
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+}
+
+document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+modalMapBtn.addEventListener('click', () => {
+  closeModal();
+  closeSidebar();
+  selectDay(modalDayIdx);
+});
+
+// ── モバイル サイドバー開閉 ──────────────────────────────
 const sidebar   = document.getElementById('sidebar');
 const toggleBtn = document.getElementById('list-toggle');
 const closeBtn  = document.getElementById('sidebar-close-btn');
